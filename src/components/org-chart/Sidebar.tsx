@@ -102,7 +102,7 @@ export const Sidebar: React.FC = () => {
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-40 bg-black bg-opacity-50 transition-opacity"
+        className="fixed inset-0 z-40 bg-black/50 transition-opacity"
         onClick={handleClose}
         aria-hidden="true"
       />

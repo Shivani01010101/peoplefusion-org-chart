@@ -307,37 +307,52 @@ export const OrgChartContainer: React.FC = () => {
                           {displayEmployee.children!.length >= 2 &&
                             index === 0 && (
                               <>
-                                {/* Mobile: smaller width */}
+                                {/* Mobile: Calculate width based only on gaps between children */}
                                 <div
                                   className="absolute h-0.5 bg-gray-300 sm:hidden"
                                   style={{
                                     left: "50%",
+                                    // Line spans from center of first child to center of last child
+                                    // For 2 children: 1 gap (1rem)
+                                    // For 3+ children: (children - 1) gaps
                                     width: `calc(${
                                       displayEmployee.children!.length - 1
-                                    } * (160px + 1rem))`,
+                                    } * 1rem)`,
                                     top: "0px",
                                   }}
                                 ></div>
-                                {/* Tablet: medium width */}
+                                {/* Tablet: Different calculation for 2 vs 3+ children */}
                                 <div
                                   className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
                                   style={{
                                     left: "50%",
-                                    width: `calc(${
-                                      displayEmployee.children!.length - 1
-                                    } * (180px + 1.5rem))`,
+                                    // For 2 children: use fixed width
+                                    // For 3+ children: use different multiplier
+                                    width:
+                                      displayEmployee.children!.length === 2
+                                        ? "18rem" // Fixed width for 2 children on tablet
+                                        : `calc(${
+                                            displayEmployee.children!.length - 1
+                                          } * 1.5rem)`, // Dynamic for 3+ children on tablet
                                     top: "0px",
+                                    zIndex: 1,
                                   }}
                                 ></div>
-                                {/* Desktop: full width */}
+                                {/* Desktop: Different calculation for 2 vs 3+ children */}
                                 <div
                                   className="absolute h-0.5 bg-gray-300 hidden md:block"
                                   style={{
                                     left: "50%",
-                                    width: `calc(${
-                                      displayEmployee.children!.length - 1
-                                    } * (220px + 2rem))`,
+                                    // For 2 children: use fixed width
+                                    // For 3+ children: use different multiplier
+                                    width:
+                                      displayEmployee.children!.length === 2
+                                        ? "16rem" // Fixed width for 2 children on desktop
+                                        : `calc(${
+                                            displayEmployee.children!.length - 1
+                                          } * 24.5rem)`, // Dynamic for 3+ children on desktop
                                     top: "0px",
+                                    zIndex: 1,
                                   }}
                                 ></div>
                               </>
@@ -476,37 +491,49 @@ export const OrgChartContainer: React.FC = () => {
                       {/* Horizontal line connecting all children - when 2 or more children, only on first child */}
                       {position.children!.length >= 2 && index === 0 && (
                         <>
-                          {/* Mobile: smaller width */}
+                          {/* Mobile: Calculate width based only on gaps between children */}
                           <div
                             className="absolute h-0.5 bg-gray-300 sm:hidden"
                             style={{
                               left: "50%",
                               width: `calc(${
                                 position.children!.length - 1
-                              } * (160px + 1rem))`,
+                              } * 1rem)`,
                               top: "0px",
                             }}
                           ></div>
-                          {/* Tablet: medium width */}
+                          {/* Tablet: Different calculation for 2 vs 3+ children */}
                           <div
                             className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
                             style={{
                               left: "50%",
-                              width: `calc(${
-                                position.children!.length - 1
-                              } * (180px + 1.5rem))`,
+                              // For 2 children: use fixed width
+                              // For 3+ children: use different multiplier
+                              width:
+                                position.children!.length === 2
+                                  ? "18rem" // Fixed width for 2 children on tablet
+                                  : `calc(${
+                                      position.children!.length - 1
+                                    } * 1.5rem)`, // Dynamic for 3+ children on tablet
                               top: "0px",
+                              zIndex: 1,
                             }}
                           ></div>
-                          {/* Desktop: full width */}
+                          {/* Desktop: Different calculation for 2 vs 3+ children */}
                           <div
                             className="absolute h-0.5 bg-gray-300 hidden md:block"
                             style={{
                               left: "50%",
-                              width: `calc(${
-                                position.children!.length - 1
-                              } * (220px + 2rem))`,
+                              // For 2 children: use fixed width
+                              // For 3+ children: use different multiplier
+                              width:
+                                position.children!.length === 2
+                                  ? "16rem" // Fixed width for 2 children on desktop
+                                  : `calc(${
+                                      position.children!.length - 1
+                                    } * 24.5rem)`, // Dynamic for 3+ children on desktop
                               top: "0px",
+                              zIndex: 1,
                             }}
                           ></div>
                         </>
@@ -569,19 +596,56 @@ export const OrgChartContainer: React.FC = () => {
           <div className="mt-4">
             <div className="h-6 w-0.5 bg-gray-300"></div>
             {organization.children!.length > 0 && (
-              <div className="relative flex items-center justify-center">
-                {organization.children!.length > 1 && (
-                  <div
-                    className="absolute h-0.5 bg-gray-300"
-                    style={{
-                      width: `${(organization.children!.length - 1) * 256}px`,
-                    }}
-                  ></div>
-                )}
-                <ul className="relative flex items-start gap-8">
+              <div className="relative flex items-center justify-center w-full">
+                {/* Children Nodes */}
+                <ul className="relative flex items-start gap-4 sm:gap-6 md:gap-8 flex-wrap justify-center">
                   {organization.children!.map((child, index) => (
-                    <li key={child.id} className="flex flex-col items-center">
-                      <div className="h-6 w-0.5 bg-gray-300"></div>
+                    <li
+                      key={child.id}
+                      className="flex flex-col items-center relative"
+                    >
+                      {/* Horizontal line connecting all children - when 2 or more children, only on first child */}
+                      {organization.children!.length >= 2 && index === 0 && (
+                        <>
+                          {/* Mobile: Calculate width based only on gaps */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 sm:hidden"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                organization.children!.length - 1
+                              } * 1rem)`,
+                              top: "0px",
+                            }}
+                          ></div>
+                          {/* Tablet: Calculate width based only on gaps */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                organization.children!.length - 1
+                              } * 1.5rem)`,
+                              top: "0px",
+                            }}
+                          ></div>
+                          {/* Desktop: Calculate width based only on gaps */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 hidden md:block"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                organization.children!.length - 1
+                              } * 2rem)`,
+                              top: "0px",
+                            }}
+                          ></div>
+                        </>
+                      )}
+                      {/* Vertical line from horizontal connector to child - when 2 or more children */}
+                      {organization.children!.length >= 2 && (
+                        <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+                      )}
                       {renderOrganizationNode(child, level + 1)}
                     </li>
                   ))}

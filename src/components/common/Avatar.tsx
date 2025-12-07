@@ -97,7 +97,7 @@ export const Avatar: React.FC<AvatarProps> = ({
   }
 
   return (
-    <div className={`${sizeClasses[size]} relative ${className}`}>
+    <div className={`${sizeClasses[size]} relative rounded-full ${className}`}>
       {isLoading && (
         <div
           className={`${sizeClasses[size]} absolute animate-pulse rounded-full bg-gray-200`}
