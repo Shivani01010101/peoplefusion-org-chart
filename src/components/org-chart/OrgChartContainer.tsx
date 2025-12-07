@@ -4,16 +4,22 @@ import React, { useState, useMemo, useEffect, useRef } from "react";
 import { useAppSelector, useAppDispatch } from "@/store/hooks";
 import {
   EmployeeData,
+  PositionData,
+  OrganizationData,
   setHighlightedEmployee,
+  transformToPositionView,
+  transformToOrganizationView,
 } from "@/store/slices/orgChartSlice";
 import { OrgChartNode } from "./OrgChartNode";
+import { PositionNode } from "./PositionNode";
+import { OrganizationNode } from "./OrganizationNode";
 
 /**
  * Expanded state mapping for tree nodes
- * Maps employee ID to boolean indicating if node is expanded
+ * Maps node ID (number or string) to boolean indicating if node is expanded
  */
 interface ExpandedState {
-  [key: number]: boolean;
+  [key: number | string]: boolean;
 }
 
 /**
@@ -30,6 +36,7 @@ interface ExpandedState {
 export const OrgChartContainer: React.FC = () => {
   const dispatch = useAppDispatch();
   const treeData = useAppSelector((state) => state.orgChart.treeData);
+  const activeTab = useAppSelector((state) => state.orgChart.activeTab);
   const searchQuery = useAppSelector((state) => state.orgChart.searchQuery);
   const searchResults = useAppSelector((state) => state.orgChart.searchResults);
   const highlightedEmployeeId = useAppSelector(
@@ -39,64 +46,79 @@ export const OrgChartContainer: React.FC = () => {
   const nodeRefs = useRef<{ [key: number]: HTMLElement | null }>({});
 
   /**
-   * Transforms API tree data structure to EmployeeData format for UI rendering
-   * Recursively processes the tree structure from the API
+   * Transforms API tree data structure based on active tab view
+   * - People: EmployeeData format (default)
+   * - Position: PositionData format (grouped by position)
+   * - Organization: OrganizationData format (grouped by department)
    */
-  const rootEmployee = useMemo(() => {
+  const rootData = useMemo(() => {
     if (!treeData) return null;
 
-    /**
-     * Recursive function to transform TreeNode to EmployeeData
-     * @param node - TreeNode from API response
-     * @returns Transformed EmployeeData object
-     */
-    const transformNode = (node: any): EmployeeData => {
-      const nameParts = node.target?.trim().split(" ") || [];
-      const firstName = nameParts[0] || "";
-      const lastName = nameParts.slice(1).join(" ") || "";
+    if (activeTab === "Position") {
+      return transformToPositionView(treeData);
+    } else if (activeTab === "Organization") {
+      return transformToOrganizationView(treeData);
+    } else {
+      // People view (default)
+      const transformNode = (node: any): EmployeeData => {
+        const nameParts = node.target?.trim().split(" ") || [];
+        const firstName = nameParts[0] || "";
+        const lastName = nameParts.slice(1).join(" ") || "";
 
-      return {
-        id: node.employee_id || node.id || 0,
-        name: node.target || "",
-        firstName,
-        lastName,
-        profilePic: node.pic,
-        directReports: node.direct_reports,
-        indirectReports: node.indirect_reports,
-        children: node.children?.map(transformNode) || [],
+        return {
+          id: node.employee_id || node.id || 0,
+          name: node.target || "",
+          firstName,
+          lastName,
+          profilePic: node.pic,
+          position: node.relationship_id,
+          department: node.department,
+          directReports: node.direct_reports,
+          indirectReports: node.indirect_reports,
+          children: node.children?.map(transformNode) || [],
+        };
       };
-    };
 
-    return transformNode(treeData);
-  }, [treeData]);
+      return transformNode(treeData);
+    }
+  }, [treeData, activeTab]);
 
   /**
    * Initialize all nodes as expanded by default
    * Recursively sets all tree nodes to expanded state
    */
   useEffect(() => {
-    if (rootEmployee) {
-      /**
-       * Recursively initialize expanded state for all nodes
-       * @param node - Employee node to process
-       * @returns ExpandedState object with all nodes set to true
-       */
-      const initializeExpanded = (node: EmployeeData): ExpandedState => {
-        const state: ExpandedState = { [node.id]: true };
+    if (rootData) {
+      const initializeExpanded = (
+        node: any,
+        idKey: string = "id"
+      ): ExpandedState => {
+        const nodeId = node[idKey] || node.id;
+        const state: ExpandedState = { [nodeId]: true };
         if (node.children) {
-          node.children.forEach((child) => {
-            Object.assign(state, initializeExpanded(child));
+          node.children.forEach((child: any) => {
+            Object.assign(state, initializeExpanded(child, idKey));
           });
         }
         return state;
       };
-      setExpandedNodes(initializeExpanded(rootEmployee));
-    }
-  }, [rootEmployee]);
 
-  // Filter tree based on search - expand path to search results
+      // Use appropriate ID key based on view type
+      const idKey =
+        activeTab === "Position" || activeTab === "Organization" ? "id" : "id";
+      setExpandedNodes(initializeExpanded(rootData, idKey));
+    }
+  }, [rootData, activeTab]);
+
+  // Filter tree based on search - expand path to search results (only for People view)
   useEffect(() => {
-    if (searchQuery && searchResults.length > 0 && rootEmployee) {
+    if (
+      searchQuery &&
+      searchResults.length > 0 &&
+      rootData &&
+      activeTab === "People"
+    ) {
+      const rootEmployee = rootData as EmployeeData;
       const expandPathToEmployee = (
         node: EmployeeData,
         targetId: number,
@@ -143,13 +165,13 @@ export const OrgChartContainer: React.FC = () => {
     } else if (!searchQuery) {
       dispatch(setHighlightedEmployee(null));
     }
-  }, [searchQuery, searchResults, rootEmployee, dispatch]);
+  }, [searchQuery, searchResults, rootData, activeTab, dispatch]);
 
   /**
    * Toggles the expanded state of a tree node
-   * @param nodeId - The ID of the node to toggle
+   * @param nodeId - The ID of the node to toggle (can be number or string)
    */
-  const toggleNode = (nodeId: number) => {
+  const toggleNode = (nodeId: number | string) => {
     setExpandedNodes((prev) => ({
       ...prev,
       [nodeId]: !prev[nodeId],
@@ -332,7 +354,118 @@ export const OrgChartContainer: React.FC = () => {
     );
   };
 
-  if (!rootEmployee) {
+  /**
+   * Render Position view
+   */
+  const renderPositionNode = (
+    position: PositionData,
+    level: number = 0
+  ): React.ReactNode => {
+    const hasChildren = position.children && position.children.length > 0;
+    const nodeId = position.id;
+    const isExpanded = expandedNodes[nodeId] !== false;
+
+    return (
+      <li
+        key={position.id}
+        className="flex flex-col items-center"
+        style={{ position: "relative" }}
+        role="treeitem"
+        aria-level={level + 1}
+      >
+        <PositionNode
+          position={position}
+          level={level}
+          isExpanded={isExpanded}
+          onToggleExpand={() => toggleNode(nodeId)}
+        />
+
+        {hasChildren && isExpanded && (
+          <div className="mt-4">
+            <div className="h-6 w-0.5 bg-gray-300"></div>
+            {position.children!.length > 0 && (
+              <div className="relative flex items-center justify-center">
+                {position.children!.length > 1 && (
+                  <div
+                    className="absolute h-0.5 bg-gray-300"
+                    style={{
+                      width: `${(position.children!.length - 1) * 256}px`,
+                    }}
+                  ></div>
+                )}
+                <ul className="relative flex items-start gap-8">
+                  {position.children!.map((child, index) => (
+                    <li key={child.id} className="flex flex-col items-center">
+                      <div className="h-6 w-0.5 bg-gray-300"></div>
+                      {renderPositionNode(child, level + 1)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </li>
+    );
+  };
+
+  /**
+   * Render Organization view
+   */
+  const renderOrganizationNode = (
+    organization: OrganizationData,
+    level: number = 0
+  ): React.ReactNode => {
+    const hasChildren =
+      organization.children && organization.children.length > 0;
+    const nodeId = organization.id;
+    const isExpanded = expandedNodes[nodeId] !== false;
+
+    return (
+      <li
+        key={organization.id}
+        className="flex flex-col items-center"
+        style={{ position: "relative" }}
+        role="treeitem"
+        aria-level={level + 1}
+      >
+        <OrganizationNode
+          organization={organization}
+          level={level}
+          isExpanded={isExpanded}
+          onToggleExpand={() => toggleNode(nodeId)}
+        />
+
+        {hasChildren && isExpanded && (
+          <div className="mt-4">
+            <div className="h-6 w-0.5 bg-gray-300"></div>
+            {organization.children!.length > 0 && (
+              <div className="relative flex items-center justify-center">
+                {organization.children!.length > 1 && (
+                  <div
+                    className="absolute h-0.5 bg-gray-300"
+                    style={{
+                      width: `${(organization.children!.length - 1) * 256}px`,
+                    }}
+                  ></div>
+                )}
+                <ul className="relative flex items-start gap-8">
+                  {organization.children!.map((child, index) => (
+                    <li key={child.id} className="flex flex-col items-center">
+                      <div className="h-6 w-0.5 bg-gray-300"></div>
+                      {renderOrganizationNode(child, level + 1)}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        )}
+      </li>
+    );
+  };
+
+  if (!rootData) {
     return null;
   }
 
@@ -340,16 +473,20 @@ export const OrgChartContainer: React.FC = () => {
     <div
       className="flex h-full w-full items-start justify-center overflow-auto p-4 md:p-8"
       role="tree"
-      aria-label="Organizational chart hierarchy"
+      aria-label={`${activeTab} organizational chart hierarchy`}
       aria-live="polite"
       aria-atomic="false"
     >
-      <ul
-        className="flex flex-col items-center"
-        role="group"
-        aria-label="Root level employees"
-      >
-        {renderNode(rootEmployee, 0, true)}
+      <ul className="flex flex-col items-center">
+        {activeTab === "Position" &&
+          rootData &&
+          renderPositionNode(rootData as PositionData, 0)}
+        {activeTab === "Organization" &&
+          rootData &&
+          renderOrganizationNode(rootData as OrganizationData, 0)}
+        {(activeTab === "People" || activeTab === "Others") &&
+          rootData &&
+          renderNode(rootData as EmployeeData, 0, true)}
       </ul>
     </div>
   );

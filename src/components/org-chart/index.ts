@@ -7,3 +7,5 @@ export { Sidebar } from "./Sidebar";
 export { ChartContainer } from "./ChartContainer";
 export { OrgChartContainer } from "./OrgChartContainer";
 export { OrgChartNode } from "./OrgChartNode";
+export { PositionNode } from "./PositionNode";
+export { OrganizationNode } from "./OrganizationNode";

@@ -49,6 +49,37 @@ export interface EmployeeData {
 }
 
 /**
+ * Available chart view types
+ */
+export type ChartViewType = "People" | "Position" | "Organization" | "Others";
+
+/**
+ * Position node structure for Position view
+ */
+export interface PositionData {
+  id: string; // Position ID (e.g., "CEO", "Manager")
+  name: string; // Position name
+  position: string; // Position title
+  employees: EmployeeData[]; // People in this position
+  children?: PositionData[]; // Sub-positions
+  directReports?: number;
+  indirectReports?: number;
+}
+
+/**
+ * Organization node structure for Organization view
+ */
+export interface OrganizationData {
+  id: string; // Department/Unit ID
+  name: string; // Department/Unit name
+  department?: string;
+  employees: EmployeeData[]; // People in this department
+  children?: OrganizationData[]; // Sub-departments
+  directReports?: number;
+  indirectReports?: number;
+}
+
+/**
  * Org Chart State
  */
 interface OrgChartState {
@@ -62,6 +93,7 @@ interface OrgChartState {
   treeData: TreeNode | null;
 
   // UI states
+  activeTab: ChartViewType;
   selectedEmployee: EmployeeData | null;
   sidebarEmployee: EmployeeData | null;
   isSidebarOpen: boolean;
@@ -78,6 +110,7 @@ const initialState: OrgChartState = {
   error: null,
   orgChartData: null,
   treeData: null,
+  activeTab: "People",
   selectedEmployee: null,
   sidebarEmployee: null,
   isSidebarOpen: false,
@@ -126,6 +159,192 @@ function flattenTree(
   }
 
   return result;
+}
+
+/**
+ * Transform tree to Position view structure
+ * Groups employees by their position/title
+ */
+export function transformToPositionView(node: TreeNode): PositionData | null {
+  const employee = transformTreeNodeToEmployee(node);
+  // Extract position from relationship_id or use a default
+  const position =
+    node.relationship_id || employee.position || "Unknown Position";
+
+  // Group children by position
+  const positionMap = new Map<string, EmployeeData[]>();
+  const positionChildren: PositionData[] = [];
+
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child) => {
+      const childEmployee = transformTreeNodeToEmployee(child);
+      const childPosition =
+        childEmployee.position ||
+        childEmployee.relationshipId ||
+        "Unknown Position";
+
+      if (!positionMap.has(childPosition)) {
+        positionMap.set(childPosition, []);
+      }
+      positionMap.get(childPosition)!.push(childEmployee);
+    });
+
+    // Create position nodes
+    positionMap.forEach((employees, posName) => {
+      const posNode: PositionData = {
+        id: `pos-${posName}`,
+        name: posName,
+        position: posName,
+        employees: employees,
+        directReports: employees.reduce(
+          (sum, emp) => sum + (emp.directReports || 0),
+          0
+        ),
+        indirectReports: employees.reduce(
+          (sum, emp) => sum + (emp.indirectReports || 0),
+          0
+        ),
+      };
+
+      // Recursively process children positions
+      const childPositions: PositionData[] = [];
+      employees.forEach((emp) => {
+        const originalNode = findNodeInTree(node, emp.id);
+        if (originalNode && originalNode.children) {
+          originalNode.children.forEach((child) => {
+            const childPos = transformToPositionView(child);
+            if (childPos) {
+              childPositions.push(childPos);
+            }
+          });
+        }
+      });
+
+      // Merge child positions if they have the same position name
+      const mergedPositions = new Map<string, PositionData>();
+      childPositions.forEach((pos) => {
+        if (mergedPositions.has(pos.position)) {
+          const existing = mergedPositions.get(pos.position)!;
+          existing.employees.push(...pos.employees);
+        } else {
+          mergedPositions.set(pos.position, pos);
+        }
+      });
+
+      posNode.children = Array.from(mergedPositions.values());
+      positionChildren.push(posNode);
+    });
+  }
+
+  return {
+    id: `pos-${position}`,
+    name: position,
+    position: position,
+    employees: [employee],
+    children: positionChildren.length > 0 ? positionChildren : undefined,
+    directReports: employee.directReports,
+    indirectReports: employee.indirectReports,
+  };
+}
+
+/**
+ * Transform tree to Organization view structure
+ * Groups employees by department/organizational unit
+ */
+export function transformToOrganizationView(
+  node: TreeNode
+): OrganizationData | null {
+  const employee = transformTreeNodeToEmployee(node);
+  // Extract department from node or use a default
+  const department = node.department || employee.department || "General";
+
+  // Group children by department
+  const deptMap = new Map<string, EmployeeData[]>();
+  const deptChildren: OrganizationData[] = [];
+
+  if (node.children && node.children.length > 0) {
+    node.children.forEach((child) => {
+      const childEmployee = transformTreeNodeToEmployee(child);
+      const childDept = childEmployee.department || "General";
+
+      if (!deptMap.has(childDept)) {
+        deptMap.set(childDept, []);
+      }
+      deptMap.get(childDept)!.push(childEmployee);
+    });
+
+    // Create department nodes
+    deptMap.forEach((employees, deptName) => {
+      const deptNode: OrganizationData = {
+        id: `dept-${deptName}`,
+        name: deptName,
+        department: deptName,
+        employees: employees,
+        directReports: employees.reduce(
+          (sum, emp) => sum + (emp.directReports || 0),
+          0
+        ),
+        indirectReports: employees.reduce(
+          (sum, emp) => sum + (emp.indirectReports || 0),
+          0
+        ),
+      };
+
+      // Recursively process children departments
+      const childDepts: OrganizationData[] = [];
+      employees.forEach((emp) => {
+        const originalNode = findNodeInTree(node, emp.id);
+        if (originalNode && originalNode.children) {
+          originalNode.children.forEach((child) => {
+            const childDept = transformToOrganizationView(child);
+            if (childDept) {
+              childDepts.push(childDept);
+            }
+          });
+        }
+      });
+
+      // Merge child departments if they have the same department name
+      const mergedDepts = new Map<string, OrganizationData>();
+      childDepts.forEach((dept) => {
+        if (mergedDepts.has(dept.department || "General")) {
+          const existing = mergedDepts.get(dept.department || "General")!;
+          existing.employees.push(...dept.employees);
+        } else {
+          mergedDepts.set(dept.department || "General", dept);
+        }
+      });
+
+      deptNode.children = Array.from(mergedDepts.values());
+      deptChildren.push(deptNode);
+    });
+  }
+
+  return {
+    id: `dept-${department}`,
+    name: department,
+    department: department,
+    employees: [employee],
+    children: deptChildren.length > 0 ? deptChildren : undefined,
+    directReports: employee.directReports,
+    indirectReports: employee.indirectReports,
+  };
+}
+
+/**
+ * Helper function to find a node in the tree by employee ID
+ */
+function findNodeInTree(node: TreeNode, targetId: number): TreeNode | null {
+  if ((node.employee_id || node.id) === targetId) {
+    return node;
+  }
+  if (node.children) {
+    for (const child of node.children) {
+      const found = findNodeInTree(child, targetId);
+      if (found) return found;
+    }
+  }
+  return null;
 }
 
 /**
@@ -227,6 +446,15 @@ const orgChartSlice = createSlice({
       state.highlightedEmployeeId = null;
     },
 
+    // Set active tab/view type
+    setActiveTab: (state, action: PayloadAction<ChartViewType>) => {
+      state.activeTab = action.payload;
+      // Clear search when switching tabs
+      state.searchQuery = "";
+      state.searchResults = [];
+      state.highlightedEmployeeId = null;
+    },
+
     // Reset state
     resetOrgChart: (state) => {
       state.loading = false;
@@ -234,6 +462,7 @@ const orgChartSlice = createSlice({
       state.error = null;
       state.orgChartData = null;
       state.treeData = null;
+      state.activeTab = "People";
       state.selectedEmployee = null;
       state.sidebarEmployee = null;
       state.isSidebarOpen = false;
@@ -288,6 +517,7 @@ export const {
   setSearchQuery,
   setHighlightedEmployee,
   clearSearch,
+  setActiveTab,
   resetOrgChart,
 } = orgChartSlice.actions;
 

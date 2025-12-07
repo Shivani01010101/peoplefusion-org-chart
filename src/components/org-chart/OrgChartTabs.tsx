@@ -1,21 +1,8 @@
 "use client";
 
-import React, { useState } from "react";
-
-/**
- * Available tab types for the organizational chart view
- */
-type TabType = "People" | "Position" | "Organization" | "Others";
-
-/**
- * Props for OrgChartTabs component
- */
-interface OrgChartTabsProps {
-  /** Currently active tab */
-  activeTab?: TabType;
-  /** Callback function when tab changes */
-  onTabChange?: (tab: TabType) => void;
-}
+import React from "react";
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setActiveTab, ChartViewType } from "@/store/slices/orgChartSlice";
 
 /**
  * OrgChartTabs Component
@@ -26,19 +13,21 @@ interface OrgChartTabsProps {
  * - Smooth transitions
  * - Keyboard accessible
  * - Visual indicator for active state
+ * - Connected to Redux state
  */
+export const OrgChartTabs: React.FC = () => {
+  const dispatch = useAppDispatch();
+  const activeTab = useAppSelector((state) => state.orgChart.activeTab);
 
-export const OrgChartTabs: React.FC<OrgChartTabsProps> = ({
-  activeTab = "People",
-  onTabChange,
-}) => {
-  const [currentTab, setCurrentTab] = useState<TabType>(activeTab);
+  const tabs: ChartViewType[] = [
+    "People",
+    "Position",
+    "Organization",
+    "Others",
+  ];
 
-  const tabs: TabType[] = ["People", "Position", "Organization", "Others"];
-
-  const handleTabClick = (tab: TabType) => {
-    setCurrentTab(tab);
-    onTabChange?.(tab);
+  const handleTabClick = (tab: ChartViewType) => {
+    dispatch(setActiveTab(tab));
   };
 
   return (
@@ -48,13 +37,15 @@ export const OrgChartTabs: React.FC<OrgChartTabsProps> = ({
           key={tab}
           onClick={() => handleTabClick(tab)}
           className={`relative px-4 py-3 text-sm font-medium transition-colors ${
-            currentTab === tab
+            activeTab === tab
               ? "text-purple-600"
               : "text-gray-600 hover:text-gray-900"
           }`}
+          aria-pressed={activeTab === tab}
+          aria-label={`Switch to ${tab} view`}
         >
           {tab}
-          {currentTab === tab && (
+          {activeTab === tab && (
             <span className="absolute bottom-0 left-0 right-0 h-0.5 bg-purple-600"></span>
           )}
           {tab === "Others" && (
@@ -63,6 +54,7 @@ export const OrgChartTabs: React.FC<OrgChartTabsProps> = ({
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
+              aria-hidden="true"
             >
               <path
                 strokeLinecap="round"
