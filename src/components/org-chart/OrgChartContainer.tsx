@@ -265,7 +265,7 @@ export const OrgChartContainer: React.FC = () => {
         {/* Children Container with Animation */}
         {hasChildren && (
           <div
-            className={`overflow-hidden transition-all duration-300 ease-in-out ${
+            className={`duration-300 ease-in-out ${
               isExpanded ? "max-h-[5000px] opacity-100" : "max-h-0 opacity-0"
             }`}
           >
@@ -471,7 +471,13 @@ export const OrgChartContainer: React.FC = () => {
 
   return (
     <div
-      className="flex h-full w-full items-start justify-center overflow-auto p-4 md:p-8"
+      data-chart-container="true"
+      className="flex items-start justify-center p-4 md:p-8"
+      style={{
+        width: "fit-content",
+        minWidth: "100%",
+        margin: "0 auto",
+      }}
       role="tree"
       aria-label={`${activeTab} organizational chart hierarchy`}
       aria-live="polite"

@@ -114,7 +114,10 @@ export default function OrgChartPage() {
           </div>
 
           {/* Chart Container */}
-          <div className="relative flex-1 bg-gray-50 overflow-auto">
+          <div
+            className="relative flex-1 bg-gray-50 overflow-auto"
+            style={{ overflowX: "auto", overflowY: "auto" }}
+          >
             <ChartContainer>
               <OrgChartContainer />
             </ChartContainer>

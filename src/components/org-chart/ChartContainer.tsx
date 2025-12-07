@@ -100,8 +100,12 @@ export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
       {/* Chart Content */}
       {!loading && !error && treeData && (
         <div
+          data-chart-wrapper="true"
           className="flex h-full w-full overflow-auto bg-gray-50"
-          style={{ minHeight: "calc(100vh - 300px)" }}
+          style={{
+            minHeight: "calc(100vh - 300px)",
+            position: "relative",
+          }}
         >
           {children}
         </div>
