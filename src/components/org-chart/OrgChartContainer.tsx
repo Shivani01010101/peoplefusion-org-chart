@@ -270,40 +270,83 @@ export const OrgChartContainer: React.FC = () => {
             }`}
           >
             {isExpanded && (
-              <div className="mt-4">
+              <div className="mt-2 sm:mt-3 md:mt-4">
                 {/* Vertical Line from parent to children level */}
-                <div className="h-6 w-0.5 bg-gray-300"></div>
+                <div className="relative flex flex-col items-center">
+                  <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+                  {/* Single arrow at the bottom of vertical line */}
+                  <div className="absolute top-4 sm:top-5 md:top-6 -translate-y-1/2">
+                    <svg
+                      className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-gray-300"
+                      fill="currentColor"
+                      viewBox="0 0 8 6"
+                    >
+                      <path d="M4 6L0 0h8z" />
+                    </svg>
+                  </div>
+                </div>
 
                 {/* Horizontal connector line and vertical drops */}
                 {displayEmployee.children!.length > 0 && (
-                  <div className="relative flex items-center justify-center">
-                    {/* Horizontal line connecting all children */}
-                    {displayEmployee.children!.length > 1 && (
-                      <div
-                        className="absolute h-0.5 bg-gray-300"
-                        style={{
-                          width: `${
-                            (displayEmployee.children!.length - 1) * 256
-                          }px`,
-                        }}
-                      ></div>
-                    )}
-
+                  <div className="relative flex items-center justify-center w-full">
                     {/* Children Nodes */}
                     <ul
-                      className="relative flex items-start gap-8"
+                      className="relative flex items-start gap-4 sm:gap-6 md:gap-8 flex-wrap justify-center"
                       role="group"
                       aria-label={`Direct reports of ${displayEmployee.name}`}
+                      id={`children-list-${displayEmployee.id}`}
                     >
                       {displayEmployee.children!.map((child, index) => (
                         <li
                           key={child.id}
-                          className="flex flex-col items-center"
+                          className="flex flex-col items-center relative"
                           role="treeitem"
                           aria-level={level + 2}
                         >
-                          {/* Vertical line from horizontal connector to child */}
-                          <div className="h-6 w-0.5 bg-gray-300"></div>
+                          {/* Horizontal line connecting all children - when 2 or more children, only on first child */}
+                          {displayEmployee.children!.length >= 2 &&
+                            index === 0 && (
+                              <>
+                                {/* Mobile: smaller width */}
+                                <div
+                                  className="absolute h-0.5 bg-gray-300 sm:hidden"
+                                  style={{
+                                    left: "50%",
+                                    width: `calc(${
+                                      displayEmployee.children!.length - 1
+                                    } * (160px + 1rem))`,
+                                    top: "0px",
+                                  }}
+                                ></div>
+                                {/* Tablet: medium width */}
+                                <div
+                                  className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
+                                  style={{
+                                    left: "50%",
+                                    width: `calc(${
+                                      displayEmployee.children!.length - 1
+                                    } * (180px + 1.5rem))`,
+                                    top: "0px",
+                                  }}
+                                ></div>
+                                {/* Desktop: full width */}
+                                <div
+                                  className="absolute h-0.5 bg-gray-300 hidden md:block"
+                                  style={{
+                                    left: "50%",
+                                    width: `calc(${
+                                      displayEmployee.children!.length - 1
+                                    } * (220px + 2rem))`,
+                                    top: "0px",
+                                  }}
+                                ></div>
+                              </>
+                            )}
+
+                          {/* Vertical line from horizontal connector to child - when 2 or more children */}
+                          {displayEmployee.children!.length >= 2 && (
+                            <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+                          )}
 
                           {/* Recursive render of child */}
                           {renderNode(
@@ -323,18 +366,20 @@ export const OrgChartContainer: React.FC = () => {
 
         {/* Collapsed Children Indicator */}
         {hasChildren && !isExpanded && (
-          <div className="mt-4 animate-fade-in">
+          <div className="mt-2 sm:mt-3 md:mt-4 animate-fade-in">
             <button
               onClick={() => toggleNode(employee.id)}
-              className="flex items-center gap-2 rounded-lg border border-gray-300 bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
+              className="flex items-center gap-1.5 sm:gap-2 rounded-lg border border-gray-300 bg-gray-50 px-2.5 sm:px-3 md:px-4 py-1.5 sm:py-2 text-xs sm:text-sm font-medium text-gray-700 transition-all hover:bg-gray-100 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2"
               aria-label={`Expand to show ${
                 employee.children?.length || 0
               } direct reports`}
               tabIndex={0}
             >
-              <span>Contains {employee.children?.length || 0}</span>
+              <span className="whitespace-nowrap">
+                Contains {employee.children?.length || 0}
+              </span>
               <svg
-                className="h-4 w-4 transition-transform"
+                className="h-3 w-3 sm:h-4 sm:w-4 transition-transform shrink-0"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -359,16 +404,22 @@ export const OrgChartContainer: React.FC = () => {
    */
   const renderPositionNode = (
     position: PositionData,
-    level: number = 0
+    level: number = 0,
+    parent?: PositionData
   ): React.ReactNode => {
     const hasChildren = position.children && position.children.length > 0;
     const nodeId = position.id;
     const isExpanded = expandedNodes[nodeId] !== false;
 
+    // Check if this is a leaf node (no children or children are collapsed)
+    const isLeafNode = !hasChildren || !isExpanded;
+
     return (
       <li
         key={position.id}
-        className="flex flex-col items-center"
+        className={`flex flex-col items-center ${
+          isLeafNode ? "pb-4 sm:pb-6 md:pb-8" : ""
+        }`}
         style={{ position: "relative" }}
         role="treeitem"
         aria-level={level + 1}
@@ -378,26 +429,104 @@ export const OrgChartContainer: React.FC = () => {
           level={level}
           isExpanded={isExpanded}
           onToggleExpand={() => toggleNode(nodeId)}
+          hasParent={level > 0}
+          onNavigateUp={() => {
+            // Navigate to parent if exists
+            if (parent) {
+              const parentId = parent.id;
+              setExpandedNodes((prev) => ({ ...prev, [parentId]: true }));
+              // Scroll to parent node if possible
+            }
+          }}
         />
 
         {hasChildren && isExpanded && (
-          <div className="mt-4">
-            <div className="h-6 w-0.5 bg-gray-300"></div>
+          <div className="mt-2 sm:mt-3 md:mt-4">
+            {/* Vertical Line from parent to children level */}
+            <div className="relative flex flex-col items-center">
+              <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+              {/* Single arrow at the bottom of vertical line */}
+              <div className="absolute top-4 sm:top-5 md:top-6 -translate-y-1/2">
+                <svg
+                  className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-gray-300"
+                  fill="currentColor"
+                  viewBox="0 0 8 6"
+                >
+                  <path d="M4 6L0 0h8z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Horizontal connector line and vertical drops */}
             {position.children!.length > 0 && (
-              <div className="relative flex items-center justify-center">
-                {position.children!.length > 1 && (
-                  <div
-                    className="absolute h-0.5 bg-gray-300"
-                    style={{
-                      width: `${(position.children!.length - 1) * 256}px`,
-                    }}
-                  ></div>
-                )}
-                <ul className="relative flex items-start gap-8">
+              <div className="relative flex items-center justify-center w-full">
+                {/* Children Nodes */}
+                <ul
+                  className="relative flex items-start gap-4 sm:gap-6 md:gap-8 flex-wrap justify-center"
+                  role="group"
+                  aria-label={`Sub-positions of ${position.name}`}
+                >
                   {position.children!.map((child, index) => (
-                    <li key={child.id} className="flex flex-col items-center">
-                      <div className="h-6 w-0.5 bg-gray-300"></div>
-                      {renderPositionNode(child, level + 1)}
+                    <li
+                      key={child.id}
+                      className="flex flex-col items-center relative"
+                      role="treeitem"
+                      aria-level={level + 2}
+                    >
+                      {/* Horizontal line connecting all children - when 2 or more children, only on first child */}
+                      {position.children!.length >= 2 && index === 0 && (
+                        <>
+                          {/* Mobile: smaller width */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 sm:hidden"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                position.children!.length - 1
+                              } * (160px + 1rem))`,
+                              top: "0px",
+                            }}
+                          ></div>
+                          {/* Tablet: medium width */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                position.children!.length - 1
+                              } * (180px + 1.5rem))`,
+                              top: "0px",
+                            }}
+                          ></div>
+                          {/* Desktop: full width */}
+                          <div
+                            className="absolute h-0.5 bg-gray-300 hidden md:block"
+                            style={{
+                              left: "50%",
+                              width: `calc(${
+                                position.children!.length - 1
+                              } * (220px + 2rem))`,
+                              top: "0px",
+                            }}
+                          ></div>
+                        </>
+                      )}
+
+                      {/* Vertical line from horizontal connector to child - when 2 or more children */}
+                      {position.children!.length >= 2 && (
+                        <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+                      )}
+
+                      {/* Recursive render of child */}
+                      <div
+                        className={
+                          !child.children || child.children.length === 0
+                            ? "pb-6 sm:pb-8 md:pb-10"
+                            : ""
+                        }
+                      >
+                        {renderPositionNode(child, level + 1, position)}
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -472,7 +601,7 @@ export const OrgChartContainer: React.FC = () => {
   return (
     <div
       data-chart-container="true"
-      className="flex items-start justify-center p-4 md:p-8"
+      className="flex items-start justify-center p-2 sm:p-4 md:p-6 lg:p-8 w-full"
       style={{
         width: "fit-content",
         minWidth: "100%",
@@ -486,7 +615,7 @@ export const OrgChartContainer: React.FC = () => {
       <ul className="flex flex-col items-center">
         {activeTab === "Position" &&
           rootData &&
-          renderPositionNode(rootData as PositionData, 0)}
+          renderPositionNode(rootData as PositionData, 0, undefined)}
         {activeTab === "Organization" &&
           rootData &&
           renderOrganizationNode(rootData as OrganizationData, 0)}

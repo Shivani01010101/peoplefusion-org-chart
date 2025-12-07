@@ -58,19 +58,10 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
 
   /**
    * Handles click on the employee card
-   * Sets the employee as selected in Redux state
+   * Opens the sidebar with employee details and sets as selected
    */
   const handleNodeClick = () => {
     dispatch(setSelectedEmployee(employee));
-  };
-
-  /**
-   * Handles click on the side icon (eye icon)
-   * Opens the sidebar with employee details
-   * Stops event propagation to prevent card click
-   */
-  const handleSideIconClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
     dispatch(setSidebarEmployee(employee));
   };
 
@@ -87,7 +78,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
     <div className="flex flex-col items-center">
       {/* Employee Card */}
       <div
-        className={`group relative flex min-w-[180px] max-w-[200px] md:min-w-[220px] md:max-w-[240px] cursor-pointer flex-col rounded-lg border-2 bg-white p-3 md:p-4 shadow-sm transition-all duration-200 ${
+        className={`group relative flex min-w-[160px] max-w-[180px] sm:min-w-[180px] sm:max-w-[200px] md:min-w-[220px] md:max-w-[240px] cursor-pointer flex-col rounded-lg border-2 bg-white p-2.5 sm:p-3 md:p-4 shadow-sm transition-all duration-200 ${
           isSelected
             ? "border-purple-500 ring-2 ring-purple-200 shadow-md"
             : isHighlighted
@@ -116,7 +107,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
         aria-describedby={`employee-${employee.id}-description`}
       >
         {/* Profile Picture and Content */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-2 sm:gap-3">
           {/* Profile Picture */}
           <div className="shrink-0">
             <Avatar
@@ -130,14 +121,14 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
           {/* Name and Title */}
           <div className="flex-1 min-w-0">
             <h3
-              className="text-sm font-semibold text-gray-900 truncate"
+              className="text-xs sm:text-sm font-semibold text-gray-900 truncate"
               id={`employee-${employee.id}-name`}
             >
               {employee.name}
             </h3>
             {employee.position && (
               <p
-                className="mt-1 text-xs text-gray-600 truncate"
+                className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-gray-600 truncate"
                 id={`employee-${employee.id}-position`}
               >
                 {employee.position}
@@ -145,7 +136,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
             )}
             {reportsDisplay && (
               <p
-                className="mt-1 text-xs text-gray-500"
+                className="mt-0.5 sm:mt-1 text-[10px] sm:text-xs text-gray-500"
                 id={`employee-${employee.id}-description`}
               >
                 {reportsDisplay} reports
@@ -153,34 +144,17 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
             )}
           </div>
 
-          {/* Side Icon - View Details */}
-          <button
-            onClick={handleSideIconClick}
-            className="shrink-0 rounded p-1.5 text-gray-400 opacity-0 transition-all duration-200 hover:bg-gray-100 hover:text-purple-600 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-1 group-hover:opacity-100 disabled:opacity-30 disabled:cursor-not-allowed"
-            aria-label={`View detailed information for ${employee.name}`}
-            aria-describedby={`employee-${employee.id}-description`}
-            tabIndex={0}
+          {/* Profile Card Icon - Always Visible */}
+          <div
+            className="shrink-0 flex items-center justify-center"
+            aria-label="Profile card"
           >
-            <svg
+            <img
+              src="/icons/profile-card.svg"
+              alt="Profile card"
               className="h-4 w-4"
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-              />
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-              />
-            </svg>
-          </button>
+            />
+          </div>
         </div>
 
         {/* Expand/Collapse Button */}
@@ -190,7 +164,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
               e.stopPropagation();
               onToggleExpand?.();
             }}
-            className="absolute -bottom-3 left-1/2 z-10 flex h-6 w-6 -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-purple-600 text-white shadow-md transition-all duration-200 hover:bg-purple-700 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="absolute -bottom-2.5 sm:-bottom-3 left-1/2 z-10 flex h-5 w-5 sm:h-6 sm:w-6 -translate-x-1/2 items-center justify-center rounded-full border-2 border-white bg-purple-600 text-white shadow-md transition-all duration-200 hover:bg-purple-700 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label={`${isExpanded ? "Collapse" : "Expand"} ${
               employee.name
             }'s team of ${employee.children?.length || 0} direct reports`}
@@ -199,7 +173,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
           >
             {isExpanded ? (
               <svg
-                className="h-4 w-4"
+                className="h-3 w-3 sm:h-4 sm:w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -213,7 +187,7 @@ export const OrgChartNode: React.FC<OrgChartNodeProps> = ({
               </svg>
             ) : (
               <svg
-                className="h-4 w-4"
+                className="h-3 w-3 sm:h-4 sm:w-4"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"

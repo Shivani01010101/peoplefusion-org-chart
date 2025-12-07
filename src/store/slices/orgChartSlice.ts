@@ -37,6 +37,8 @@ export interface EmployeeData {
   profilePic?: string;
   position?: string;
   department?: string;
+  location?: string;
+  fte?: string;
   email?: string;
   phone?: string;
   directReports?: number;
@@ -58,12 +60,17 @@ export type ChartViewType = "People" | "Position" | "Organization" | "Others";
  */
 export interface PositionData {
   id: string; // Position ID (e.g., "CEO", "Manager")
-  name: string; // Position name
-  position: string; // Position title
+  name: string; // Position title (e.g., "Sales Manager")
+  position: string; // Position title (same as name)
+  department?: string; // Department/Team (e.g., "Direct Sales")
+  location?: string; // Location (e.g., "Madrid")
+  employeeName?: string; // Primary employee name in this position (e.g., "Laura Castillo")
+  fte?: string; // FTE information (e.g., "1 / 1 FTE")
   employees: EmployeeData[]; // People in this position
   children?: PositionData[]; // Sub-positions
   directReports?: number;
   indirectReports?: number;
+  containsCount?: number; // Number of direct reports (for "Contains X" button)
 }
 
 /**
@@ -171,6 +178,11 @@ export function transformToPositionView(node: TreeNode): PositionData | null {
   const position =
     node.relationship_id || employee.position || "Unknown Position";
 
+  // Extract additional position details
+  const department = employee.department || node.department;
+  const location = node.location || employee.location;
+  const fte = node.fte || employee.fte || "1 / 1 FTE";
+
   // Group children by position
   const positionMap = new Map<string, EmployeeData[]>();
   const positionChildren: PositionData[] = [];
@@ -191,10 +203,16 @@ export function transformToPositionView(node: TreeNode): PositionData | null {
 
     // Create position nodes
     positionMap.forEach((employees, posName) => {
+      // Get primary employee for position details
+      const primaryEmp = employees[0];
       const posNode: PositionData = {
         id: `pos-${posName}`,
         name: posName,
         position: posName,
+        department: primaryEmp?.department,
+        location: primaryEmp?.location,
+        employeeName: primaryEmp?.name,
+        fte: primaryEmp?.fte || "1 / 1 FTE",
         employees: employees,
         directReports: employees.reduce(
           (sum, emp) => sum + (emp.directReports || 0),
@@ -202,6 +220,10 @@ export function transformToPositionView(node: TreeNode): PositionData | null {
         ),
         indirectReports: employees.reduce(
           (sum, emp) => sum + (emp.indirectReports || 0),
+          0
+        ),
+        containsCount: employees.reduce(
+          (sum, emp) => sum + (emp.directReports || 0),
           0
         ),
       };
@@ -240,10 +262,15 @@ export function transformToPositionView(node: TreeNode): PositionData | null {
     id: `pos-${position}`,
     name: position,
     position: position,
+    department: department,
+    location: location,
+    employeeName: employee.name,
+    fte: fte,
     employees: [employee],
     children: positionChildren.length > 0 ? positionChildren : undefined,
     directReports: employee.directReports,
     indirectReports: employee.indirectReports,
+    containsCount: employee.directReports || 0,
   };
 }
 
