@@ -456,7 +456,7 @@ export const OrgChartContainer: React.FC = () => {
         />
 
         {hasChildren && isExpanded && (
-          <div className="mt-2 sm:mt-3 md:mt-4">
+          <div className="">
             {/* Vertical Line from parent to children level */}
             <div className="relative flex flex-col items-center">
               <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
@@ -593,16 +593,37 @@ export const OrgChartContainer: React.FC = () => {
         />
 
         {hasChildren && isExpanded && (
-          <div className="mt-4">
-            <div className="h-6 w-0.5 bg-gray-300"></div>
+          <div className="">
+            {/* Vertical Line from parent to children level */}
+            <div className="relative flex flex-col items-center">
+              <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
+              {/* Single arrow at the bottom of vertical line */}
+              <div className="absolute top-4 sm:top-5 md:top-6 -translate-y-1/2">
+                <svg
+                  className="h-2 w-2 sm:h-2.5 sm:w-2.5 text-gray-300"
+                  fill="currentColor"
+                  viewBox="0 0 8 6"
+                >
+                  <path d="M4 6L0 0h8z" />
+                </svg>
+              </div>
+            </div>
+
+            {/* Horizontal connector line and vertical drops */}
             {organization.children!.length > 0 && (
               <div className="relative flex items-center justify-center w-full">
                 {/* Children Nodes */}
-                <ul className="relative flex items-start gap-4 sm:gap-6 md:gap-8 flex-wrap justify-center">
+                <ul
+                  className="relative flex items-start gap-4 sm:gap-6 md:gap-8 flex-wrap justify-center"
+                  role="group"
+                  aria-label={`Sub-organizations of ${organization.name}`}
+                >
                   {organization.children!.map((child, index) => (
                     <li
                       key={child.id}
                       className="flex flex-col items-center relative"
+                      role="treeitem"
+                      aria-level={level + 2}
                     >
                       {/* Horizontal line connecting all children - when 2 or more children, only on first child */}
                       {organization.children!.length >= 2 && index === 0 && (
@@ -618,26 +639,38 @@ export const OrgChartContainer: React.FC = () => {
                               top: "0px",
                             }}
                           ></div>
-                          {/* Tablet: Calculate width based only on gaps */}
+                          {/* Tablet: Different calculation for 2 vs 3+ children */}
                           <div
                             className="absolute h-0.5 bg-gray-300 hidden sm:block md:hidden"
                             style={{
                               left: "50%",
-                              width: `calc(${
-                                organization.children!.length - 1
-                              } * 1.5rem)`,
+                              // For 2 children: use fixed width
+                              // For 3+ children: use different multiplier
+                              width:
+                                organization.children!.length === 2
+                                  ? "18rem" // Fixed width for 2 children on tablet
+                                  : `calc(${
+                                      organization.children!.length - 1
+                                    } * 1.5rem)`, // Dynamic for 3+ children on tablet
                               top: "0px",
+                              zIndex: 1,
                             }}
                           ></div>
-                          {/* Desktop: Calculate width based only on gaps */}
+                          {/* Desktop: Different calculation for 2 vs 3+ children */}
                           <div
                             className="absolute h-0.5 bg-gray-300 hidden md:block"
                             style={{
                               left: "50%",
-                              width: `calc(${
-                                organization.children!.length - 1
-                              } * 2rem)`,
+                              // For 2 children: use fixed width
+                              // For 3+ children: use different multiplier
+                              width:
+                                organization.children!.length === 2
+                                  ? "16rem" // Fixed width for 2 children on desktop
+                                  : `calc(${
+                                      organization.children!.length - 1
+                                    } * 24.5rem)`, // Dynamic for 3+ children on desktop
                               top: "0px",
+                              zIndex: 1,
                             }}
                           ></div>
                         </>
@@ -646,7 +679,15 @@ export const OrgChartContainer: React.FC = () => {
                       {organization.children!.length >= 2 && (
                         <div className="h-4 sm:h-5 md:h-6 w-0.5 bg-gray-300"></div>
                       )}
-                      {renderOrganizationNode(child, level + 1)}
+
+                      {/* Recursive render of child */}
+                      <div
+                        className={
+                          organization.children!.length >= 2 ? "mt-6" : ""
+                        }
+                      >
+                        {renderOrganizationNode(child, level + 1)}
+                      </div>
                     </li>
                   ))}
                 </ul>
