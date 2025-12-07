@@ -19,3 +19,5 @@ _metadata.json
 *.njsproj
 *.sln
 *.sw?
+.next
+.env
