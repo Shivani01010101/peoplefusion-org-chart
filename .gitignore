@@ -21,3 +21,4 @@ _metadata.json
 *.sw?
 .next
 .env
+next-env.d.ts

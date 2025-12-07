@@ -1,5 +1,9 @@
 export { Header } from "./Header";
 export { SearchBar } from "./SearchBar";
+export { ChartSearchBar } from "./ChartSearchBar";
+export { OrgChartTabs } from "./OrgChartTabs";
+export { ChartControls } from "./ChartControls";
 export { Sidebar } from "./Sidebar";
 export { ChartContainer } from "./ChartContainer";
-
+export { OrgChartContainer } from "./OrgChartContainer";
+export { OrgChartNode } from "./OrgChartNode";

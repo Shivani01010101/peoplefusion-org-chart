@@ -69,6 +69,7 @@ interface OrgChartState {
   // Search
   searchQuery: string;
   searchResults: EmployeeData[];
+  highlightedEmployeeId: number | null;
 }
 
 const initialState: OrgChartState = {
@@ -82,6 +83,7 @@ const initialState: OrgChartState = {
   isSidebarOpen: false,
   searchQuery: "",
   searchResults: [],
+  highlightedEmployeeId: null,
 };
 
 /**
@@ -128,30 +130,29 @@ function flattenTree(
 
 /**
  * Async thunk to fetch org chart data
+ *
+ * Fetches organizational chart data for a specific employee from the API.
+ * The API returns data in the format: { status: "OK", tree: TreeNode }
+ *
+ * @param employeeId - The unique identifier of the employee
+ * @returns Promise resolving to OrgChartApiResponse or rejecting with error message
  */
 export const fetchOrgChart = createAsyncThunk(
   "orgChart/fetchOrgChart",
   async (employeeId: number, { rejectWithValue }) => {
     try {
+      // Service returns properly typed OrgChartApiResponse
       const response = await orgChartService.getPeopleChart(employeeId);
-
-      // The API returns a tree structure, so we need to handle it
-      // If response has tree property, use it directly
-      const responseAny = response as any;
-      if (responseAny.tree) {
-        return responseAny as OrgChartApiResponse;
-      }
-
-      // Otherwise, wrap it in the expected format
-      // The service might return the tree directly or wrapped
-      return {
-        status: "OK",
-        tree: responseAny.tree || responseAny,
-      } as OrgChartApiResponse;
-    } catch (error: any) {
+      return response;
+    } catch (error: unknown) {
+      // Type-safe error handling
+      const axiosError = error as {
+        response?: { data?: { message?: string } };
+        message?: string;
+      };
       return rejectWithValue(
-        error.response?.data?.message ||
-          error.message ||
+        axiosError.response?.data?.message ||
+          axiosError.message ||
           "Failed to fetch organizational chart"
       );
     }
@@ -205,17 +206,25 @@ const orgChartSlice = createSlice({
           (emp) =>
             emp.name.toLowerCase().includes(query) ||
             emp.firstName?.toLowerCase().includes(query) ||
-            emp.lastName?.toLowerCase().includes(query)
+            emp.lastName?.toLowerCase().includes(query) ||
+            emp.position?.toLowerCase().includes(query)
         );
       } else {
         state.searchResults = [];
+        state.highlightedEmployeeId = null;
       }
+    },
+
+    // Set highlighted employee (for search results)
+    setHighlightedEmployee: (state, action: PayloadAction<number | null>) => {
+      state.highlightedEmployeeId = action.payload;
     },
 
     // Clear search
     clearSearch: (state) => {
       state.searchQuery = "";
       state.searchResults = [];
+      state.highlightedEmployeeId = null;
     },
 
     // Reset state
@@ -230,6 +239,7 @@ const orgChartSlice = createSlice({
       state.isSidebarOpen = false;
       state.searchQuery = "";
       state.searchResults = [];
+      state.highlightedEmployeeId = null;
     },
   },
   extraReducers: (builder) => {
@@ -276,6 +286,7 @@ export const {
   toggleSidebar,
   closeSidebar,
   setSearchQuery,
+  setHighlightedEmployee,
   clearSearch,
   resetOrgChart,
 } = orgChartSlice.actions;

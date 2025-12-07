@@ -2,7 +2,20 @@
 
 import React from "react";
 import { useAppSelector } from "@/store/hooks";
+import { SkeletonLoader } from "@/components/common/SkeletonLoader";
 
+/**
+ * ChartContainer Component
+ *
+ * Wrapper component that handles loading, error, and empty states for the org chart.
+ * Displays appropriate UI based on the current state:
+ * - Loading: Shows skeleton loader
+ * - Error: Shows error message with helpful information
+ * - Empty: Shows empty state with suggestions
+ * - Success: Renders the chart content
+ *
+ * @param children - The org chart content to render when data is available
+ */
 export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
@@ -12,20 +25,13 @@ export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
 
   return (
     <div className="flex h-full w-full flex-col">
-      {/* Loading State */}
-      {loading && (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
-            <div className="mx-auto h-12 w-12 animate-spin rounded-full border-4 border-gray-200 border-t-blue-600"></div>
-            <p className="mt-4 text-sm text-gray-600">Loading organizational chart...</p>
-          </div>
-        </div>
-      )}
+      {/* Loading State with Skeleton */}
+      {loading && <SkeletonLoader />}
 
       {/* Error State */}
       {error && !loading && (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
+        <div className="flex h-full items-center justify-center p-4">
+          <div className="text-center max-w-md">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100">
               <svg
                 className="h-6 w-6 text-red-600"
@@ -45,14 +51,18 @@ export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
               Error loading chart
             </h3>
             <p className="mt-2 text-sm text-gray-600">{error}</p>
+            <p className="mt-4 text-xs text-gray-500">
+              Please check your connection and try again, or contact support if
+              the problem persists.
+            </p>
           </div>
         </div>
       )}
 
       {/* Empty State */}
       {!loading && !error && !treeData && (
-        <div className="flex h-full items-center justify-center">
-          <div className="text-center">
+        <div className="flex h-full items-center justify-center p-4">
+          <div className="text-center max-w-md">
             <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-gray-100">
               <svg
                 className="h-6 w-6 text-gray-600"
@@ -69,10 +79,19 @@ export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
               </svg>
             </div>
             <h3 className="mt-4 text-lg font-semibold text-gray-900">
-              No chart data
+              No organizational chart data
             </h3>
             <p className="mt-2 text-sm text-gray-600">
-              Select an employee to view their organizational chart
+              The organizational chart data is empty or unavailable. This could
+              mean:
+            </p>
+            <ul className="mt-3 text-left text-sm text-gray-500 space-y-1">
+              <li>• The employee has no reporting relationships</li>
+              <li>• The data is still being loaded</li>
+              <li>• There was an issue fetching the data</li>
+            </ul>
+            <p className="mt-4 text-xs text-gray-400">
+              Please try refreshing the page or selecting a different employee.
             </p>
           </div>
         </div>
@@ -80,11 +99,13 @@ export const ChartContainer: React.FC<{ children: React.ReactNode }> = ({
 
       {/* Chart Content */}
       {!loading && !error && treeData && (
-        <div className="flex h-full w-full overflow-auto bg-gray-50">
+        <div
+          className="flex h-full w-full overflow-auto bg-gray-50"
+          style={{ minHeight: "calc(100vh - 300px)" }}
+        >
           {children}
         </div>
       )}
     </div>
   );
 };
-
