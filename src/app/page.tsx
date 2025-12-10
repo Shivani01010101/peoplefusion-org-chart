@@ -38,7 +38,7 @@ export default function OrgChartPage() {
   const { toasts, showError, removeToast } = useToast();
 
   // Default employee ID to load on initial render
-  const defaultEmployeeId = 30;
+  const defaultEmployeeId = 21;
 
   const handleRetry = () => {
     dispatch(fetchOrgChart(defaultEmployeeId));
