@@ -1,0 +1,261 @@
+
+================================================================================
+API TESTING REPORT - ORGANIZATIONAL CHART
+================================================================================
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 18
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 0
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/2703590f-75e4-4807-b337-efad0eb0ca96.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 21
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 8
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/e0ccf848-75a1-4b90-b1df-22c4871ca5a1.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 22
+--------------------------------------------------------------------------------
+❌ FAILED: Request failed with status code 400
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 23
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 0
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/e0ccf848-75a1-4b90-b1df-22c4871ca5a1.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 25
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 0
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/128eea30-83f7-4422-9322-4a696c0d61e8.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 29
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 7
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/e0ccf848-75a1-4b90-b1df-22c4871ca5a1.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+--------------------------------------------------------------------------------
+EMPLOYEE ID: 30
+--------------------------------------------------------------------------------
+✅ Status: SUCCESS
+
+📋 STRUCTURE:
+   - Employee: ✅
+   - Manager: ❌
+   - Direct Reports: ✅ (1)
+   - Related Employees: ❌ (0)
+
+🔍 MISSING FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: Some reports missing fields
+
+⚠️  NULL FIELDS:
+   - Employee: email, phone, position, department
+   - Direct Reports: 1 report(s) have null fields
+
+📊 RELATIONSHIP DEPTH:
+   - Manager Depth: 0 (not available in tree structure)
+   - Direct Reports Count: 1
+   - Indirect Reports: 3
+   - Related Employees Count: 0 (not in tree structure)
+
+📭 EMPTY NODES:
+   - Manager: Empty ⚠️
+   - Direct Reports: Present ✅
+   - Related Employees: Empty ⚠️
+
+🖼️  PROFILE IMAGES:
+   - Employee: ✅ Profile Pic, ✅ Thumbnail
+     URL: https://hel1.your-objectstorage.com/peoplefusion-media/employees/1/e0ccf848-75a1-4b90-b1df-22c4871ca5a1.png
+     Valid: ✅
+   - Direct Reports: 1/1 have images
+   - Related Employees: 0/0 have images
+
+✅ BROKEN RELATIONSHIPS: None
+
+
+================================================================================
+SUMMARY
+================================================================================
+Total Tests: 7
+✅ Successful: 6
+❌ Failed: 1
+⚠️  Total Null Fields Found: 48
+🔴 Total Broken Relationships: 0
+================================================================================
